@@ -1,6 +1,7 @@
 import os
 import re
 import time
+import random
 import shutil
 import requests
 from bs4 import BeautifulSoup
@@ -53,7 +54,7 @@ def getLarge(page):
         plain_text = source_code.text
         soup = BeautifulSoup(plain_text, "html.parser")
         savePic(soup.findAll('img')[0]['src'])
-        time.sleep(0.5)
+        time.sleep(random.uniform(1, 5))
 
 
 def savePic(url):
