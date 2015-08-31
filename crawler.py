@@ -32,11 +32,11 @@ def makeTimeDir(year, month):
     makepath()
 
 # find galleries of each Code
-def skimCode(gallery):
+def skimCode(sYear, sMonth, eYear, eMonth):
     global path
-    for i in range(24043, 24188):  # enumerate month from 2003-07 to 2015-08
+    for i in range(sYear * 12 + sMonth, eYear * 12 + eMonth):  # enumerate month from 2003-07 to 2015-08
         month = (i - 1) % 12 + 1
-        year = i / 12
+        year = (i - 1) / 12
         my = '%02d' % month + '-' + str(year) # my = month-year
         makeTimeDir(year, month) # set up directory
         url = gallery + my # get gallery url
@@ -81,4 +81,12 @@ def savePic(url):
         shutil.copyfileobj(response.raw, out_file)
     del response
 
-skimCode(gallery)
+# start project
+def pandora():
+    sYear = input("Please input the start year:\n")
+    sMonth = input("Please input the start month:\n")
+    eYear = input("Please input the end year:\n")
+    eMonth = input("Please input the end month:\n")
+    skimCode(sYear, sMonth, eYear, eMonth)
+
+pandora()
