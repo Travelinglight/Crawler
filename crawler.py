@@ -25,7 +25,7 @@ def makeTimeDir(year, month):
 def skimCode(gallery):
     global path
     for i in range(24043, 24188):
-        month = i % 12
+        month = (i - 1) % 12 + 1
         year = i / 12
         my = '%02d' % month + '-' + str(year)
         makeTimeDir(year, month)
