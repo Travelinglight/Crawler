@@ -4,79 +4,81 @@ import time
 import random
 import shutil
 import requests
+import threading
 from bs4 import BeautifulSoup
 
 seed = 'http://www.kindgirls.com'
 gallery = 'http://www.kindgirls.com/photo-archive/?s='
 path = './image'
 
+# thread class
+class mythread(threading.Thread):
+    def __init__(self, threadID, src):
+        threading.Thread.__init__(self)
+        self.threadID = threadID
+        self.src = src
+    def run(self):
+        savePic(self.src)
 
+# make directory for categorizing pics
 def makepath():
     if not os.path.exists(path):
         os.makedirs(path)
 
-
+# make directory depending on year-month
 def makeTimeDir(year, month):
     global path
     path = './image/' + str(year) + '-' + '%02d' % month
     makepath()
 
-
+# find galleries of each Code
 def skimCode(gallery):
     global path
-    for i in range(24043, 24188):
+    for i in range(24043, 24188):  # enumerate month from 2003-07 to 2015-08
         month = (i - 1) % 12 + 1
         year = i / 12
-        my = '%02d' % month + '-' + str(year)
-        makeTimeDir(year, month)
-        url = gallery + my
-        source_code = requests.get(url)
-        # just get the code, no headers or anything
+        my = '%02d' % month + '-' + str(year) # my = month-year
+        makeTimeDir(year, month) # set up directory
+        url = gallery + my # get gallery url
+        source_code = requests.get(url) # request source code
         plain_text = source_code.text
-        # BeautifulSoup objects can be sorted through easy
         soup = BeautifulSoup(plain_text, "html.parser")
         for room in soup.findAll('div', {'class':'gal_list'}):
             room = seed + room.contents[0]['href']
             path += '/' + re.findall('^.*/([a-zA-Z]*)/', room)[0]
-            makepath()
-            getLarge(room)
+            makepath() # make a directory folder for each gallery
+            getLarge(room) # go to large img and download them
             path = path[0:path.rfind('/')]
-            time.sleep(0.5)
-
 
 def getLarge(page):
+    tid = 0
+    threads = []
     source_code = requests.get(page)
     plain_text = source_code.text
     soup = BeautifulSoup(plain_text, "html.parser")
-    for div in soup.findAll('div', {'class':'gal_list'}):
+    for div in soup.findAll('div', {'class':'gal_list'}): # going through the gallery
+        tid += 1
         pic = seed + div.contents[0]['href']
-        source_code = requests.get(pic)
+        source_code = requests.get(pic) # request page that contains large picture
         plain_text = source_code.text
         soup = BeautifulSoup(plain_text, "html.parser")
-        savePic(soup.findAll('img')[0]['src'])
-        time.sleep(random.uniform(1, 5))
+        threads.append(mythread(tid, soup.findAll('img')[0]['src'])) # insert new threads into list
+    for t in threads: # starts all threads
+        t.start()
+    for t in threads: # wait for all threads to end
+        t.join()
+    time.sleep(random.uniform(1, 5)) # sleep for a random period of time to avoid being recognized as machine
 
-
+# download and save picture into the proper directory
 def savePic(url):
     global path
-    print '////////////////////////////////////'
-    start_time = time.time()
-    dup = path + re.findall(r'/[^/]*$', url)[0]
+    dup = path + re.findall(r'/[^/]*$', url)[0] # img full name
     pattern = '\.(jpg|JPG|jpeg|JPEG|png|PNG|tif|TIF|tiff|TIFF|bmp|BMP)'
-    if re.findall(pattern, dup) == []:
+    if re.findall(pattern, dup) == []: # make sure the src url is an image
         return
-    elapsed_time = time.time() - start_time
-    print '/ regexp: ' + str(elapsed_time)
-    start_time = time.time()
-    response = requests.get(url, stream=True)
-    elapsed_time = time.time() - start_time
-    print '/ request: ' + str(elapsed_time)
-    start_time = time.time()
-    with open(dup, 'wb') as out_file:
+    response = requests.get(url, stream=True) # download image
+    with open(dup, 'wb') as out_file: # same image
         shutil.copyfileobj(response.raw, out_file)
-    elapsed_time = time.time() - start_time
-    print '/ write: ' + str(elapsed_time)
     del response
-
 
 skimCode(gallery)
