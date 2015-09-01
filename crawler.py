@@ -43,7 +43,7 @@ def myRequest(url, st = False):
 # find galleries of each Code
 def skimCode(sYear, sMonth, eYear, eMonth):
     global path
-    for i in range(sYear * 12 + sMonth, eYear * 12 + eMonth):  # enumerate month from 2003-07 to 2015-08
+    for i in range(sYear * 12 + sMonth, eYear * 12 + eMonth + 1):  # enumerate month from 2003-07 to 2015-08
         month = (i - 1) % 12 + 1
         year = (i - 1) / 12
         my = '%02d' % month + '-' + str(year) # my = month-year
