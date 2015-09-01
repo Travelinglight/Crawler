@@ -54,7 +54,7 @@ def skimCode(sYear, sMonth, eYear, eMonth):
         soup = BeautifulSoup(plain_text, "html.parser")
         for room in soup.findAll('div', {'class':'gal_list'}):
             room = seed + room.contents[0]['href']
-            path += '/' + re.findall('^.*/([a-zA-Z]*)/', room)[0]
+            path += '/' + re.findall('^.*/([a-zA-Z\- \(\)]*)/', room)[0]
             makepath() # make a directory folder for each gallery
             getLarge(room) # go to large img and download them
             path = path[0:path.rfind('/')]
